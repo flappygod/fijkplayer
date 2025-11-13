@@ -465,9 +465,9 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
   }
 
   double getAspectRatio(BoxConstraints constraints, double ar) {
-    if (ar < 0 && _vWidth!=-1 && _vHeight!=-1) {
+    if (ar < 0 && _vWidth != -1 && _vHeight != -1) {
       ar = _vWidth / _vHeight;
-    } else if (ar.isInfinite) {
+    } else if (ar.isInfinite || _vWidth == -1 || _vHeight == -1) {
       ar = constraints.maxWidth / constraints.maxHeight;
     }
     return ar;
@@ -559,7 +559,7 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
           rect: pos,
           child: Image(
             image: widget.cover!,
-            fit: BoxFit.fill,
+            fit: BoxFit.fitWidth,
           ),
         ));
       }
