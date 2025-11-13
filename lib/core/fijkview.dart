@@ -465,7 +465,7 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
   }
 
   double getAspectRatio(BoxConstraints constraints, double ar) {
-    if (ar < 0) {
+    if (ar < 0 && _vWidth!=-1 && _vHeight!=-1) {
       ar = _vWidth / _vHeight;
     } else if (ar.isInfinite) {
       ar = constraints.maxWidth / constraints.maxHeight;
