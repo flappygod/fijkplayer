@@ -119,10 +119,11 @@ class FijkView extends StatefulWidget {
     required this.player,
     this.width,
     this.height,
-    this.fit = FijkFit.contain,
     this.fsFit = FijkFit.contain,
+    this.fit = FijkFit.contain,
     this.panelBuilder = defaultFijkPanelBuilder,
     this.color = const Color(0xFF607D8B),
+    this.coverFit = BoxFit.contain,
     this.cover,
     this.fs = true,
     this.onDispose,
@@ -145,6 +146,7 @@ class FijkView extends StatefulWidget {
   final Color color;
 
   /// cover image provider
+  final BoxFit coverFit;
   final ImageProvider? cover;
 
   /// How a video should be inscribed into this [FijkView].
@@ -271,6 +273,7 @@ class _FijkViewState extends State<FijkView> {
           body: _InnerFijkView(
             fijkViewState: this,
             fullScreen: true,
+            coverFit: widget.coverFit,
             cover: widget.cover,
             data: _fijkData,
           ),
@@ -335,6 +338,7 @@ class _FijkViewState extends State<FijkView> {
           : _InnerFijkView(
               fijkViewState: this,
               fullScreen: false,
+              coverFit:widget.coverFit,
               cover: widget.cover,
               data: _fijkData,
             ),
@@ -346,12 +350,14 @@ class _InnerFijkView extends StatefulWidget {
   _InnerFijkView({
     required this.fijkViewState,
     required this.fullScreen,
+    required this.coverFit,
     required this.cover,
     required this.data,
   });
 
   final _FijkViewState fijkViewState;
   final bool fullScreen;
+  final BoxFit coverFit;
   final ImageProvider? cover;
   final FijkData data;
 
@@ -559,7 +565,7 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
           rect: pos,
           child: Image(
             image: widget.cover!,
-            fit: BoxFit.fitWidth,
+            fit: widget.coverFit,
           ),
         ));
       }
