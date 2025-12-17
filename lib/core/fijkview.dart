@@ -622,12 +622,19 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
       //添加封面图层（如果需要）
       if (widget.cover != null && !value.videoRenderStart) {
         if (resizedChildSize != null) {
+          Size fixSize = getCoverSize(resizedChildSize, childSize);
           widgets.add(
             Positioned.fromRect(
               rect: resizedPos!,
-              child: Image(
-                image: widget.cover!,
-                fit: widget.coverFit,
+              child: ClipRect(
+                child: FittedBox(
+                  fit: BoxFit.cover,
+                  child: SizedBox(
+                    width: fixSize.width,
+                    height: fixSize.height,
+                    child: buildTexture(),
+                  ),
+                ),
               ),
             ),
           );
@@ -661,6 +668,24 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
       return Stack(children: widgets);
     });
   }
+
+  Size getCoverSize(Size sizeA, Size sizeB) {
+    //计算宽高比
+    final double ratioB = sizeB.width / sizeB.height;
+
+    //根据宽高比调整尺寸
+    final double newHeight = sizeA.width / ratioB;
+    final double newWidth = sizeA.height * ratioB;
+
+    //如果新高度大于 sizeA 的高度，则以宽度为基准
+    if (newHeight >= sizeA.height) {
+      return Size(sizeA.width, newHeight);
+    } else {
+      //否则以高度为基准
+      return Size(newWidth, sizeA.height);
+    }
+  }
+
 }
 
 
