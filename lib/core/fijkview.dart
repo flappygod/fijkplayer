@@ -626,10 +626,7 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
             Positioned.fromRect(
               rect: resizedPos!,
               child: Image(
-                image: CroppedImageProvider(
-                  imageProvider: widget.cover!,
-                  targetAspectRatio: resizedPos.width / resizedPos.height,
-                ),
+                image: widget.cover!,
                 fit: widget.coverFit,
               ),
             ),
