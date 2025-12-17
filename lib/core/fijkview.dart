@@ -632,7 +632,12 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
                   child: SizedBox(
                     width: fixSize.width,
                     height: fixSize.height,
-                    child: buildTexture(),
+                    child: Image(
+                      width: fixSize.width,
+                      height: fixSize.height,
+                      image: widget.cover!,
+                      fit: widget.coverFit,
+                    ),
                   ),
                 ),
               ),
@@ -668,6 +673,7 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
       return Stack(children: widgets);
     });
   }
+
 
   Size getCoverSize(Size sizeA, Size sizeB) {
     //计算宽高比
