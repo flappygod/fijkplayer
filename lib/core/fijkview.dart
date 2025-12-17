@@ -482,16 +482,16 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
   }
 
   double getAspectRatio(BoxConstraints constraints, double ar,bool maxMinRatio) {
+    if (ar < 0 && _vWidth != -1 && _vHeight != -1) {
+      ar = _vWidth / _vHeight;
+    } else if (ar.isInfinite || _vWidth == -1 || _vHeight == -1) {
+      ar = constraints.maxWidth / constraints.maxHeight;
+    }
     if(maxMinRatio && widget.minRatio!=null){
       ar = max(widget.minRatio!,ar);
     }
     if(maxMinRatio && widget.maxRatio!=null){
       ar = min(widget.maxRatio!,ar);
-    }
-    if (ar < 0 && _vWidth != -1 && _vHeight != -1) {
-      ar = _vWidth / _vHeight;
-    } else if (ar.isInfinite || _vWidth == -1 || _vHeight == -1) {
-      ar = constraints.maxWidth / constraints.maxHeight;
     }
     return ar;
   }
