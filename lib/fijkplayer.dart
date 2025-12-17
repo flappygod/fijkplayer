@@ -33,6 +33,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'core/fijkcropper.dart';
+
 part 'core/fijklog.dart';
 part 'core/fijkoption.dart';
 part 'core/fijkplayer.dart';

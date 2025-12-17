@@ -127,7 +127,12 @@ class FijkView extends StatefulWidget {
     this.cover,
     this.fs = true,
     this.onDispose,
+    this.minRatio,
+    this.maxRatio,
   });
+
+  final double? minRatio;
+  final double? maxRatio;
 
   /// The player that need display video by this [FijkView].
   /// Will be passed to [panelBuilder].
@@ -336,12 +341,14 @@ class _FijkViewState extends State<FijkView> {
       child: _fullScreen
           ? Container()
           : _InnerFijkView(
-              fijkViewState: this,
-              fullScreen: false,
-              coverFit:widget.coverFit,
-              cover: widget.cover,
-              data: _fijkData,
-            ),
+        fijkViewState: this,
+        fullScreen: false,
+        coverFit: widget.coverFit,
+        cover: widget.cover,
+        data: _fijkData,
+        minRatio: widget.minRatio,
+        maxRatio: widget.maxRatio,
+      ),
     );
   }
 }
@@ -353,6 +360,8 @@ class _InnerFijkView extends StatefulWidget {
     required this.coverFit,
     required this.cover,
     required this.data,
+    this.minRatio,
+    this.maxRatio,
   });
 
   final _FijkViewState fijkViewState;
@@ -360,6 +369,8 @@ class _InnerFijkView extends StatefulWidget {
   final BoxFit coverFit;
   final ImageProvider? cover;
   final FijkData data;
+  final double? minRatio;
+  final double? maxRatio;
 
   @override
   __InnerFijkViewState createState() => __InnerFijkViewState();
@@ -470,7 +481,13 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
     return constraints.constrain(Size(width, height));
   }
 
-  double getAspectRatio(BoxConstraints constraints, double ar) {
+  double getAspectRatio(BoxConstraints constraints, double ar,bool maxMinRatio) {
+    if(maxMinRatio && widget.minRatio!=null){
+      ar = max(widget.minRatio!,ar);
+    }
+    if(maxMinRatio && widget.maxRatio!=null){
+      ar = min(widget.maxRatio!,ar);
+    }
     if (ar < 0 && _vWidth != -1 && _vHeight != -1) {
       ar = _vWidth / _vHeight;
     } else if (ar.isInfinite || _vWidth == -1 || _vHeight == -1) {
@@ -479,10 +496,12 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
     return ar;
   }
 
-  /// calculate Texture size
-  Size getTxSize(BoxConstraints constraints, FijkFit fit) {
+  ///calculate Texture size
+  Size getTxSize(BoxConstraints constraints, FijkFit fit,bool maxMinRatio) {
     Size childSize = applyAspectRatio(
-        constraints, getAspectRatio(constraints, fit.aspectRatio));
+      constraints,
+      getAspectRatio(constraints, fit.aspectRatio,maxMinRatio),
+    );
     double sizeFactor = fit.sizeFactor;
     if (-1.0 < sizeFactor && sizeFactor < -0.0) {
       sizeFactor = max(constraints.maxWidth / childSize.width,
@@ -540,42 +559,112 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
     _videoRender = value.videoRenderStart;
 
     return LayoutBuilder(builder: (ctx, constraints) {
-      // get child size
-      final Size childSize = getTxSize(constraints, _fit);
+      //获取子组件的大小和偏移量
+      final Size childSize = getTxSize(constraints, _fit, false);
       final Offset offset = getTxOffset(constraints, childSize, _fit);
       final Rect pos = Rect.fromLTWH(
-          offset.dx, offset.dy, childSize.width, childSize.height);
+        offset.dx,
+        offset.dy,
+        childSize.width,
+        childSize.height,
+      );
 
-      List ws = <Widget>[
+      //根据限制重新取得的宽高
+      Size? resizedChildSize;
+      Offset? resizedOffset;
+      Rect? resizedPos;
+      if (widget.minRatio != null || widget.maxRatio != null) {
+        resizedChildSize = getTxSize(constraints, _fit, true);
+        resizedOffset = getTxOffset(constraints, resizedChildSize, _fit);
+        resizedPos = Rect.fromLTWH(
+          resizedOffset.dx,
+          resizedOffset.dy,
+          resizedChildSize.width,
+          resizedChildSize.height,
+        );
+      }
+
+      //构建基础背景容器
+      final List<Widget> widgets = [
         Container(
           width: constraints.maxWidth,
           height: constraints.maxHeight,
           color: _color,
         ),
-        Positioned.fromRect(
-            rect: pos,
-            child: Container(
-              color: Color(0xFF000000),
-              child: buildTexture(),
-            )),
       ];
 
-      if (widget.cover != null && !value.videoRenderStart) {
-        ws.add(Positioned.fromRect(
-          rect: pos,
-          child: Image(
-            image: widget.cover!,
-            fit: widget.coverFit,
+      //视频播放层
+      if (resizedChildSize != null) {
+        widgets.add(
+          Positioned.fromRect(
+            rect: resizedPos!,
+            child: ClipRect(
+              child: FittedBox(
+                fit: BoxFit.cover,
+                child: SizedBox(
+                  width: childSize.width,
+                  height: childSize.height,
+                  child: buildTexture(),
+                ),
+              ),
+            ),
           ),
-        ));
+        );
+      } else {
+        widgets.add(
+          Positioned.fromRect(
+            rect: pos,
+            child: buildTexture(),
+          ),
+        );
       }
 
-      if (_panelBuilder != null) {
-        ws.add(_panelBuilder!(_player, data, ctx, constraints.biggest, pos));
+      //添加封面图层（如果需要）
+      if (widget.cover != null && !value.videoRenderStart) {
+        if (resizedChildSize != null) {
+          widgets.add(
+            Positioned.fromRect(
+              rect: resizedPos!,
+              child: Image(
+                image: CroppedImageProvider(
+                  imageProvider: widget.cover!,
+                  targetAspectRatio: resizedPos.width / resizedPos.height,
+                ),
+                fit: widget.coverFit,
+              ),
+            ),
+          );
+        } else {
+          widgets.add(
+            Positioned.fromRect(
+              rect: pos,
+              child: Image(
+                image: widget.cover!,
+                fit: widget.coverFit,
+              ),
+            ),
+          );
+        }
       }
-      return Stack(
-        children: ws as List<Widget>,
-      );
+
+      //添加自定义面板（如果需要）
+      if (_panelBuilder != null) {
+        widgets.add(
+          _panelBuilder!(
+            _player,
+            data,
+            ctx,
+            constraints.biggest,
+            pos,
+          ),
+        );
+      }
+
+      //返回堆叠布局
+      return Stack(children: widgets);
     });
   }
 }
+
+
+
