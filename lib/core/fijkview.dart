@@ -129,10 +129,14 @@ class FijkView extends StatefulWidget {
     this.onDispose,
     this.minRatio,
     this.maxRatio,
+    this.videoWidth,
+    this.videoHeight,
   });
 
   final double? minRatio;
   final double? maxRatio;
+  final double? videoWidth;
+  final double? videoHeight;
 
   /// The player that need display video by this [FijkView].
   /// Will be passed to [panelBuilder].
@@ -341,14 +345,16 @@ class _FijkViewState extends State<FijkView> {
       child: _fullScreen
           ? Container()
           : _InnerFijkView(
-        fijkViewState: this,
-        fullScreen: false,
-        coverFit: widget.coverFit,
-        cover: widget.cover,
-        data: _fijkData,
-        minRatio: widget.minRatio,
-        maxRatio: widget.maxRatio,
-      ),
+              fijkViewState: this,
+              fullScreen: false,
+              coverFit: widget.coverFit,
+              cover: widget.cover,
+              data: _fijkData,
+              minRatio: widget.minRatio,
+              maxRatio: widget.maxRatio,
+              videoWidth: widget.videoWidth,
+              videoHeight: widget.videoHeight,
+            ),
     );
   }
 }
@@ -362,6 +368,8 @@ class _InnerFijkView extends StatefulWidget {
     required this.data,
     this.minRatio,
     this.maxRatio,
+    this.videoWidth,
+    this.videoHeight,
   });
 
   final _FijkViewState fijkViewState;
@@ -371,6 +379,8 @@ class _InnerFijkView extends StatefulWidget {
   final FijkData data;
   final double? minRatio;
   final double? maxRatio;
+  final double? videoWidth;
+  final double? videoHeight;
 
   @override
   __InnerFijkViewState createState() => __InnerFijkViewState();
@@ -481,26 +491,33 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
     return constraints.constrain(Size(width, height));
   }
 
-  double getAspectRatio(BoxConstraints constraints, double ar,bool maxMinRatio) {
+  double getAspectRatio(
+    BoxConstraints constraints,
+    double ar,
+    bool maxMinRatio,
+  ) {
     if (ar < 0 && _vWidth != -1 && _vHeight != -1) {
       ar = _vWidth / _vHeight;
     } else if (ar.isInfinite || _vWidth == -1 || _vHeight == -1) {
       ar = constraints.maxWidth / constraints.maxHeight;
     }
-    if(maxMinRatio && widget.minRatio!=null){
-      ar = max(widget.minRatio!,ar);
+    if (widget.videoWidth != null && widget.videoHeight != null) {
+      ar = widget.videoWidth! / widget.videoHeight!;
     }
-    if(maxMinRatio && widget.maxRatio!=null){
-      ar = min(widget.maxRatio!,ar);
+    if (maxMinRatio && widget.minRatio != null) {
+      ar = max(widget.minRatio!, ar);
+    }
+    if (maxMinRatio && widget.maxRatio != null) {
+      ar = min(widget.maxRatio!, ar);
     }
     return ar;
   }
 
   ///calculate Texture size
-  Size getTxSize(BoxConstraints constraints, FijkFit fit,bool maxMinRatio) {
+  Size getTxSize(BoxConstraints constraints, FijkFit fit, bool maxMinRatio) {
     Size childSize = applyAspectRatio(
       constraints,
-      getAspectRatio(constraints, fit.aspectRatio,maxMinRatio),
+      getAspectRatio(constraints, fit.aspectRatio, maxMinRatio),
     );
     double sizeFactor = fit.sizeFactor;
     if (-1.0 < sizeFactor && sizeFactor < -0.0) {
@@ -622,7 +639,6 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
       //添加封面图层（如果需要）
       if (widget.cover != null && !value.videoRenderStart) {
         if (resizedChildSize != null) {
-          Size fixSize = getCoverSize(resizedChildSize, childSize);
           widgets.add(
             Positioned.fromRect(
               rect: resizedPos!,
@@ -630,11 +646,9 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
                 child: FittedBox(
                   fit: BoxFit.cover,
                   child: SizedBox(
-                    width: fixSize.width,
-                    height: fixSize.height,
+                    width: childSize.width,
+                    height: childSize.height,
                     child: Image(
-                      width: fixSize.width,
-                      height: fixSize.height,
                       image: widget.cover!,
                       fit: widget.coverFit,
                     ),
@@ -673,26 +687,4 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
       return Stack(children: widgets);
     });
   }
-
-
-  Size getCoverSize(Size sizeA, Size sizeB) {
-    //计算宽高比
-    final double ratioB = sizeB.width / sizeB.height;
-
-    //根据宽高比调整尺寸
-    final double newHeight = sizeA.width / ratioB;
-    final double newWidth = sizeA.height * ratioB;
-
-    //如果新高度大于 sizeA 的高度，则以宽度为基准
-    if (newHeight >= sizeA.height) {
-      return Size(sizeA.width, newHeight);
-    } else {
-      //否则以高度为基准
-      return Size(newWidth, sizeA.height);
-    }
-  }
-
 }
-
-
-
