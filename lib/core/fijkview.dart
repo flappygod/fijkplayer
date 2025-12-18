@@ -24,96 +24,96 @@
 
 part of fijkplayer;
 
-/// The signature of the [LayoutBuilder] builder function.
+///The signature of the [LayoutBuilder] builder function.
 ///
-/// Must not return null.
-/// The return widget is placed as one of [Stack]'s children.
-/// If change FijkView between normal mode and full screen mode, the panel would
-/// be rebuild. [data] can be used to pass value from different panel.
+///Must not return null.
+///The return widget is placed as one of [Stack]'s children.
+///If change FijkView between normal mode and full screen mode, the panel would
+///be rebuild. [data] can be used to pass value from different panel.
 typedef FijkPanelWidgetBuilder = Widget Function(FijkPlayer player,
     FijkData data, BuildContext context, Size viewSize, Rect texturePos);
 
-/// How a video should be inscribed into [FijkView].
+///How a video should be inscribed into [FijkView].
 ///
-/// See also [BoxFit]
+///See also [BoxFit]
 class FijkFit {
   const FijkFit(
       {this.alignment = Alignment.center,
       this.aspectRatio = -1,
       this.sizeFactor = 1.0});
 
-  /// [Alignment] for this [FijkView] Container.
-  /// alignment is applied to Texture inner FijkView
+  ///[Alignment] for this [FijkView] Container.
+  ///alignment is applied to Texture inner FijkView
   final Alignment alignment;
 
-  /// [aspectRatio] controls inner video texture widget's aspect ratio.
+  ///[aspectRatio] controls inner video texture widget's aspect ratio.
   ///
-  /// A [FijkView] has an important child widget which display the video frame.
-  /// This important inner widget is a [Texture] in this version.
-  /// Normally, we want the aspectRatio of [Texture] to be same
-  /// as playback's real video frame's aspectRatio.
-  /// It's also the default behaviour of [FijkView]
-  /// or if aspectRatio is assigned null or negative value.
+  ///A [FijkView] has an important child widget which display the video frame.
+  ///This important inner widget is a [Texture] in this version.
+  ///Normally, we want the aspectRatio of [Texture] to be same
+  ///as playback's real video frame's aspectRatio.
+  ///It's also the default behaviour of [FijkView]
+  ///or if aspectRatio is assigned null or negative value.
   ///
-  /// If you want to change this default behaviour,
-  /// just pass the aspectRatio you want.
+  ///If you want to change this default behaviour,
+  ///just pass the aspectRatio you want.
   ///
-  /// Addition: double.infinate is a special value.
-  /// The aspect ratio of inner Texture will be same as FijkView's aspect ratio
-  /// if you set double.infinate to attribute aspectRatio.
+  ///Addition: double.infinate is a special value.
+  ///The aspect ratio of inner Texture will be same as FijkView's aspect ratio
+  ///if you set double.infinate to attribute aspectRatio.
   final double aspectRatio;
 
-  /// The size of [Texture] is multiplied by this factor.
+  ///The size of [Texture] is multiplied by this factor.
   ///
-  /// Some spacial values:
-  ///  * (-1.0, -0.0) scaling up to max of [FijkView]'s width and height
-  ///  * (-2.0, -1.0) scaling up to [FijkView]'s width
-  ///  * (-3.0, -2.0) scaling up to [FijkView]'s height
+  ///Some spacial values:
+  /// * (-1.0, -0.0) scaling up to max of [FijkView]'s width and height
+  /// * (-2.0, -1.0) scaling up to [FijkView]'s width
+  /// * (-3.0, -2.0) scaling up to [FijkView]'s height
   final double sizeFactor;
 
-  /// Fill the target FijkView box by distorting the video's aspect ratio.
+  ///Fill the target FijkView box by distorting the video's aspect ratio.
   static const FijkFit fill = FijkFit(
     sizeFactor: 1.0,
     aspectRatio: double.infinity,
     alignment: Alignment.center,
   );
 
-  /// As large as possible while still containing the video entirely within the
-  /// target FijkView box.
+  ///As large as possible while still containing the video entirely within the
+  ///target FijkView box.
   static const FijkFit contain = FijkFit(
     sizeFactor: 1.0,
     aspectRatio: -1,
     alignment: Alignment.center,
   );
 
-  /// As small as possible while still covering the entire target FijkView box.
+  ///As small as possible while still covering the entire target FijkView box.
   static const FijkFit cover = FijkFit(
     sizeFactor: -0.5,
     aspectRatio: -1,
     alignment: Alignment.center,
   );
 
-  /// Make sure the full width of the source is shown, regardless of
-  /// whether this means the source overflows the target box vertically.
+  ///Make sure the full width of the source is shown, regardless of
+  ///whether this means the source overflows the target box vertically.
   static const FijkFit fitWidth = FijkFit(sizeFactor: -1.5);
 
-  /// Make sure the full height of the source is shown, regardless of
-  /// whether this means the source overflows the target box horizontally.
+  ///Make sure the full height of the source is shown, regardless of
+  ///whether this means the source overflows the target box horizontally.
   static const FijkFit fitHeight = FijkFit(sizeFactor: -2.5);
 
-  /// As large as possible while still containing the video entirely within the
-  /// target FijkView box. But change video's aspect ratio to 4:3.
+  ///As large as possible while still containing the video entirely within the
+  ///target FijkView box. But change video's aspect ratio to 4:3.
   static const FijkFit ar4_3 = FijkFit(aspectRatio: 4.0 / 3.0);
 
-  /// As large as possible while still containing the video entirely within the
-  /// target FijkView box. But change video's aspect ratio to 16:9.
+  ///As large as possible while still containing the video entirely within the
+  ///target FijkView box. But change video's aspect ratio to 16:9.
   static const FijkFit ar16_9 = FijkFit(aspectRatio: 16.0 / 9.0);
 }
 
-/// [FijkView] is a widget that can display the video frame of [FijkPlayer].
+///[FijkView] is a widget that can display the video frame of [FijkPlayer].
 ///
-/// Actually, it is a Container widget contains many children.
-/// The most important is a Texture which display the read video frame.
+///Actually, it is a Container widget contains many children.
+///The most important is a Texture which display the read video frame.
 class FijkView extends StatefulWidget {
   FijkView({
     required this.player,
@@ -138,47 +138,47 @@ class FijkView extends StatefulWidget {
   final double? videoWidth;
   final double? videoHeight;
 
-  /// The player that need display video by this [FijkView].
-  /// Will be passed to [panelBuilder].
+  ///The player that need display video by this [FijkView].
+  ///Will be passed to [panelBuilder].
   final FijkPlayer player;
 
-  /// builder to build panel Widget
+  ///builder to build panel Widget
   final FijkPanelWidgetBuilder panelBuilder;
 
-  /// This method will be called when fijkView dispose.
-  /// FijkData is managed inner FijkView. User can change fijkData in custom panel.
-  /// See [panelBuilder]'s second argument.
-  /// And check if some value need to be recover on FijkView dispose.
+  ///This method will be called when fijkView dispose.
+  ///FijkData is managed inner FijkView. User can change fijkData in custom panel.
+  ///See [panelBuilder]'s second argument.
+  ///And check if some value need to be recover on FijkView dispose.
   final void Function(FijkData)? onDispose;
 
-  /// background color
+  ///background color
   final Color color;
 
-  /// cover image provider
+  ///cover image provider
   final BoxFit coverFit;
   final ImageProvider? cover;
 
-  /// How a video should be inscribed into this [FijkView].
+  ///How a video should be inscribed into this [FijkView].
   final FijkFit fit;
 
-  /// How a video should be inscribed into this [FijkView] at fullScreen mode.
+  ///How a video should be inscribed into this [FijkView] at fullScreen mode.
   final FijkFit fsFit;
 
-  /// Nullable, width of [FijkView]
-  /// If null, the weight will be as big as possible.
+  ///Nullable, width of [FijkView]
+  ///If null, the weight will be as big as possible.
   final double? width;
 
-  /// Nullable, height of [FijkView].
-  /// If null, the height will be as big as possible.
+  ///Nullable, height of [FijkView].
+  ///If null, the height will be as big as possible.
   final double? height;
 
-  /// Enable or disable the full screen
+  ///Enable or disable the full screen
   ///
-  /// If [fs] is true, FijkView make response to the [FijkValue.fullScreen] value changed,
-  /// and push o new full screen mode page when [FijkValue.fullScreen] is true, pop full screen page when [FijkValue.fullScreen]  become false.
+  ///If [fs] is true, FijkView make response to the [FijkValue.fullScreen] value changed,
+  ///and push o new full screen mode page when [FijkValue.fullScreen] is true, pop full screen page when [FijkValue.fullScreen]  become false.
   ///
-  /// If [fs] is false, FijkView never make response to the change of [FijkValue.fullScreen].
-  /// But you can still call [FijkPlayer.enterFullScreen] and [FijkPlayer.exitFullScreen] and make your own full screen pages.
+  ///If [fs] is false, FijkView never make response to the change of [FijkValue.fullScreen].
+  ///But you can still call [FijkPlayer.enterFullScreen] and [FijkPlayer.exitFullScreen] and make your own full screen pages.
   final bool fs;
 
   @override
@@ -242,8 +242,8 @@ class _FijkViewState extends State<FijkView> {
         _fullScreen = false;
       }
 
-      // save width and height to make judgement about whether to
-      // request landscape when enter full screen mode
+      //save width and height to make judgement about whether to
+      //request landscape when enter full screen mode
       Size? size = value.size;
       if (size != null && value.prepared) {
         _vWidth = size.width;
@@ -534,7 +534,7 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
     return childSize;
   }
 
-  /// calculate Texture offset
+  ///calculate Texture offset
   Offset getTxOffset(BoxConstraints constraints, Size childSize, FijkFit fit) {
     final Alignment resolvedAlignment = fit.alignment;
     final Offset diff = (constraints.biggest - childSize) as Offset;
@@ -566,9 +566,10 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
     _fit = widget.fullScreen ? fView.fsFit : fView.fit;
     _textureId = widget.fijkViewState._textureId;
 
-    FijkValue value = _player.value;
-    FijkData data = widget.data;
-    Size? size = value.size;
+    final FijkValue value = _player.value;
+    final FijkData data = widget.data;
+
+    final Size? size = value.size;
     if (size != null && value.prepared) {
       _vWidth = size.width;
       _vHeight = size.height;
@@ -576,23 +577,20 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
     _videoRender = value.videoRenderStart;
 
     return LayoutBuilder(builder: (ctx, constraints) {
-      //获取子组件的大小和偏移量
+      //原始 childSize/pos
       final Size childSize = getTxSize(constraints, _fit, false);
       final Offset offset = getTxOffset(constraints, childSize, _fit);
       final Rect pos = Rect.fromLTWH(
-        offset.dx,
-        offset.dy,
-        childSize.width,
-        childSize.height,
-      );
+          offset.dx, offset.dy, childSize.width, childSize.height);
 
-      //根据限制重新取得的宽高
-      Size? resizedChildSize;
-      Offset? resizedOffset;
+      //resized rect（如果需要）
+      final bool needResize =
+          widget.minRatio != null || widget.maxRatio != null;
       Rect? resizedPos;
-      if (widget.minRatio != null || widget.maxRatio != null) {
-        resizedChildSize = getTxSize(constraints, _fit, true);
-        resizedOffset = getTxOffset(constraints, resizedChildSize, _fit);
+      if (needResize) {
+        final Size resizedChildSize = getTxSize(constraints, _fit, true);
+        final Offset resizedOffset =
+            getTxOffset(constraints, resizedChildSize, _fit);
         resizedPos = Rect.fromLTWH(
           resizedOffset.dx,
           resizedOffset.dy,
@@ -601,76 +599,46 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
         );
       }
 
-      //构建基础背景容器
-      final List<Widget> widgets = [
-        Container(
-          width: constraints.maxWidth,
-          height: constraints.maxHeight,
-          color: _color,
+      final Rect targetRect = resizedPos ?? pos;
+
+      //先把texture+cover合成一个Stack
+      final bool showCover = widget.cover != null && !value.videoRenderStart;
+      Widget videoAndCover = Stack(
+        fit: StackFit.expand,
+        children: [
+          buildTexture(),
+          if (showCover)
+            Image(
+              image: widget.cover!,
+              fit: widget.coverFit,
+            ),
+        ],
+      );
+
+      //resized 模式下需要 ClipRect + FittedBox.cover（保持原逻辑）
+      if (needResize) {
+        videoAndCover = ClipRect(
+          child: FittedBox(
+            fit: BoxFit.cover,
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: childSize.width,
+              height: childSize.height,
+              child: videoAndCover,
+            ),
+          ),
+        );
+      }
+
+      //将合成后的 videoAndCover 作为一个整体加入外层 Stack
+      final widgets = <Widget>[
+        SizedBox.expand(child: Container(color: _color)),
+        Positioned.fromRect(
+          rect: targetRect,
+          child: needResize ? videoAndCover : videoAndCover,
         ),
       ];
-
-      //视频播放层
-      if (resizedChildSize != null) {
-        widgets.add(
-          Positioned.fromRect(
-            rect: resizedPos!,
-            child: ClipRect(
-              child: FittedBox(
-                fit: BoxFit.cover,
-                child: SizedBox(
-                  width: childSize.width,
-                  height: childSize.height,
-                  child: buildTexture(),
-                ),
-              ),
-            ),
-          ),
-        );
-      } else {
-        widgets.add(
-          Positioned.fromRect(
-            rect: pos,
-            child: buildTexture(),
-          ),
-        );
-      }
-
-      //添加封面图层（如果需要）
-      if (widget.cover != null && !value.videoRenderStart) {
-        if (resizedChildSize != null) {
-          widgets.add(
-            Positioned.fromRect(
-              rect: resizedPos!,
-              child: ClipRect(
-                child: FittedBox(
-                  fit: BoxFit.cover,
-                  child: SizedBox(
-                    width: childSize.width,
-                    height: childSize.height,
-                    child: Image(
-                      image: widget.cover!,
-                      fit: widget.coverFit,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          );
-        } else {
-          widgets.add(
-            Positioned.fromRect(
-              rect: pos,
-              child: Image(
-                image: widget.cover!,
-                fit: widget.coverFit,
-              ),
-            ),
-          );
-        }
-      }
-
-      //添加自定义面板（如果需要）
+      //自定义面板（仍传原 pos，保持原逻辑）
       if (_panelBuilder != null) {
         widgets.add(
           _panelBuilder!(
@@ -682,8 +650,6 @@ class __InnerFijkViewState extends State<_InnerFijkView> {
           ),
         );
       }
-
-      //返回堆叠布局
       return Stack(children: widgets);
     });
   }
